@@ -7,14 +7,17 @@ const Retrier = require('../src/index')
 let i = 0;
 
 function *run(whatToSay) {
+
   if(i < 5) {
+    i++;
     throw new Error('Not 5 yet')
   }
+
   return whatToSay;
 }
 
 function *main() {
-   let retrier = new Retrier(run, ['hello, world'], {logger: console})
+   let retrier = new Retrier(run, ['hello, world'], {logger: console, step: 100, max: 10})
   ;
 
   return (yield retrier.run());
