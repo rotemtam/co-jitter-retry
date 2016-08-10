@@ -1,8 +1,9 @@
 {
   "name": "co-jitter-retry",
-  "version": "1.0.0",
+  "description": "Retry generators with full jitter",
+  "version": "1.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "mocha tests/**/*.spec.js"
   },
@@ -11,6 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "co-sleep": "0.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rotemtam/co-jitter-retry.git"
   },
   "devDependencies": {
     "bluebird": "^3.4.1",
