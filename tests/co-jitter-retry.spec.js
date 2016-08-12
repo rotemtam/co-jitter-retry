@@ -75,4 +75,39 @@ describe('Query retrier', function() {
         });
     });
 
+    describe('retry decision', function() {
+        let retrier, res, mock, err;
+        before(function() {
+            sinon.stub(Mock, 'mock');
+            Mock.mock.onCall(0).rejects({status: 500});
+            Mock.mock.onCall(1).rejects({status: 404});
+        });
+
+        before(function() {
+            retrier = new Retrier(Mock.mock, [1], {
+              'sleep': () => Promise.resolve(),
+              'shouldRetry': (err) => err.status > 499
+            });
+        });
+
+        before(function *() {
+          try {
+            res = yield retrier.run();
+          } catch(error) {
+            err = error;
+          }
+        });
+
+        it('should run 2 times', function() {
+          expect(Mock.mock.callCount).to.equal(2);
+        });
+
+        it('should throw an error in the end', function() {
+            expect(err).to.eql({status: 404});
+        });
+
+        after(function() {
+            Mock.mock.restore();
+        });
+    });
 });

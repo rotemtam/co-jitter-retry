@@ -16,6 +16,7 @@ module.exports = class Retrier {
         this.step = opts.step || STEP;
         this.sleep = opts.sleep || sleep;
         this.logger = opts.logger || { error: function(){} };
+        this.shouldRetry = opts.shouldRetry || () => true;
     }
 
     *_attempt() {
@@ -27,18 +28,20 @@ module.exports = class Retrier {
     }
 
     *run() {
-
         for(let i = 0; i <= this.max; i++) {
             try {
                 return (yield this._attempt())
             } catch(err) {
+              if( ! this.shouldRetry(err) ) {
+                throw err;
+              } else {
                 this.attempt++;
                 let slp = this._calc_sleep();
                 this.logger.error(err);
                 this.logger.error('Retrying', this.attempt, slp, 'ms');
                 yield this.sleep(slp)
+              }
             }
         }
-
     }
 }
