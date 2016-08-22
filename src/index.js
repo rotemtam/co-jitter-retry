@@ -16,7 +16,7 @@ module.exports = class Retrier {
         this.step = opts.step || STEP;
         this.sleep = opts.sleep || sleep;
         this.logger = opts.logger || { error: function(){} };
-        this.shouldRetry = opts.shouldRetry || () => true;
+        this.shouldRetry = opts.shouldRetry || (() => true);
     }
 
     *_attempt() {
