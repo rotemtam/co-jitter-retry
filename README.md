@@ -20,7 +20,7 @@ npm install co-jitter-retry
 ### Usage
 
 ```js
-const Retrier = require('../src/index')
+const Retrier = require('co-jitter-retry')
  , co = require('co');
 
 function *getSomethingFromDB(param1, param2) {
