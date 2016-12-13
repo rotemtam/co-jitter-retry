@@ -110,4 +110,72 @@ describe('Query retrier', function() {
             Mock.mock.restore();
         });
     });
+
+    describe('when all retries fail', function() {
+        let retrier, res, mock, err;
+        before(function() {
+            sinon.stub(Mock, 'mock');
+            Mock.mock.rejects(new Error('Fail'));
+        });
+
+        before(function() {
+            retrier = new Retrier(Mock.mock, [1], {
+              'sleep': () => Promise.resolve(),
+            });
+        });
+
+        before(function *() {
+          try {
+            res = yield retrier.run();
+          } catch(error) {
+            err = error;
+          }
+        });
+
+        it('should run 5 times', function() {
+          expect(Mock.mock.callCount).to.equal(5);
+        });
+
+        it('should throw the last error', function() {
+            expect(err).to.match(/Fail/);
+        });
+
+        after(function() {
+            Mock.mock.restore();
+        });
+    });
+
+    describe('Max attempts', () => {
+      let retrier, res, mock, err;
+
+      const N_ATTEMPTS = 100
+
+      before(function() {
+          sinon.stub(Mock, 'mock');
+          Mock.mock.rejects(new Error('Fail'));
+      });
+
+      before(function() {
+          retrier = new Retrier(Mock.mock, [1], {
+            'sleep': () => Promise.resolve(),
+            'max_attempts': N_ATTEMPTS
+          });
+      });
+
+      before(function *() {
+        try {
+          res = yield retrier.run();
+        } catch(error) {
+          err = error;
+        }
+      });
+
+      it('should run N times', function() {
+        expect(Mock.mock.callCount).to.equal(N_ATTEMPTS);
+      });
+
+      after(function() {
+          Mock.mock.restore();
+      });
+    });
 });
