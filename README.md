@@ -11,6 +11,12 @@ Exponential Backoff.  Well, turns out it isn't the wisest decision, and adding
 jitter to your backoff strategy can help you a lot. Read more
 about it here: https://www.awsarchitectureblog.com/2015/03/backoff.html.
 
+### Updates
+
+Version 2.0.0:
+- Changed max argument name to "max_attempts". It now counts total runs of function instead of total retries.
+- Retrier.run() will now throw the last error in case the last attempts doesn't succeed. 
+
 ### Install
 
 ```bash
