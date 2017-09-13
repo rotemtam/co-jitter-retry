@@ -15,6 +15,25 @@ describe('Query retrier', function() {
       mock: function *() {}
     };
 
+    let clsMock = class Mock {
+      constructor() {
+        this.foo = "bar"
+        this.counter = 0
+      }
+
+      mock() {
+        let self = this;
+        return new Promise(function(resolve, reject) {
+          if(self.counter<4) {
+            self.counter++
+            reject(new Error("test"))
+          } else {
+            resolve(self.foo)
+          }
+        })
+      }
+    }
+
     describe('calculating sleep', function() {
         let r, step = 1000;
 
@@ -44,22 +63,23 @@ describe('Query retrier', function() {
     })
 
     describe('retry mechanism', function() {
-        let retrier, res, mock;
+      let retrier, res, mock;
+      describe('function', function() {
         before(function() {
-            sinon.stub(Mock, 'mock');
-            Mock.mock.onCall(0).rejects(false);
-            Mock.mock.onCall(1).rejects(false);
-            Mock.mock.onCall(2).rejects(false);
-            Mock.mock.onCall(3).rejects(false);
-            Mock.mock.onCall(4).resolves(true);
+          sinon.stub(Mock, 'mock');
+          Mock.mock.onCall(0).rejects(false);
+          Mock.mock.onCall(1).rejects(false);
+          Mock.mock.onCall(2).rejects(false);
+          Mock.mock.onCall(3).rejects(false);
+          Mock.mock.onCall(4).resolves(true);
         });
 
         before(function() {
-            retrier = new Retrier(Mock.mock, [1], {'sleep': () => Promise.resolve()});
+          retrier = new Retrier(Mock.mock, [1], {'sleep': () => Promise.resolve()});
         });
 
         before(function *() {
-            res = yield retrier.run();
+          res = yield retrier.run();
         });
 
         it('should run 5 times', function() {
@@ -67,12 +87,39 @@ describe('Query retrier', function() {
         });
 
         it('should return true in the end', function() {
-            expect(res).to.equal(true);
+          expect(res).to.equal(true);
         });
 
         after(function() {
-            Mock.mock.restore();
+          Mock.mock.restore();
         });
+      })
+
+      describe('with ctx', function() {
+        let mockInst = new clsMock()
+
+        before(function() {
+          sinon.spy(mockInst, 'mock');
+        })
+        before(function() {
+          retrier = new Retrier(mockInst.mock, [1], {'sleep': () => Promise.resolve()}, mockInst);
+        });
+        before(function *() {
+          try{
+            res = yield retrier.run();
+          }
+          catch(err){
+            console.log(err)
+          }
+        });
+        it('should run 5 times', function() {
+          expect(mockInst.mock.callCount).to.equal(5);
+        });
+
+        it('should return true in the end', function() {
+          expect(res).to.equal("bar");
+        });
+      })
     });
 
     describe('retry decision', function() {

@@ -7,7 +7,7 @@ const MAX_ATTEMPTS = 5
 
 module.exports = class Retrier {
 
-    constructor(method, args, opts) {
+    constructor(method, args, opts, ctx) {
         opts = opts || {};
         this.method = method;
         this.args = args;
@@ -17,10 +17,15 @@ module.exports = class Retrier {
         this.sleep = opts.sleep || sleep;
         this.logger = opts.logger || { error: function(){} };
         this.shouldRetry = opts.shouldRetry || (() => true);
+        if (ctx == undefined) {
+          this.ctx=null
+        } else {
+          this.ctx=ctx
+        }
     }
 
     *_attempt() {
-        return yield this.method.apply(null, this.args);
+        return (yield this.method.apply(this.ctx, this.args));
     }
 
     _calc_sleep() {
@@ -45,7 +50,6 @@ module.exports = class Retrier {
               }
             }
         }
-
         throw lastError
     }
 }
