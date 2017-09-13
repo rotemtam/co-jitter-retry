@@ -60,7 +60,8 @@ __Parameters__
   whether or not it should retry. For example, you might want to retry an HTTP request
   if the status code is 500 or higher, in order to ignore errors caused by bad requests
   on your side. In which case you could pass: ```js (err) => err.status > 499 ```
-
+ - __ctx__  - Context object.
+ 
 Example:
 
 ```js
